@@ -8,10 +8,10 @@ Open Items / Remaining Work:
 
 ---
 
-## YYYY-MM-DD
+## 2026-02-18
 
-- Session scope – TBD.
-- Environment – TBD (e.g. laptop, droplet).
+- Session scope – Runtime onboarding completion, Telegram pairing, Supabase memory foundation, role/RLS hardening, documentation architecture expansion, and clean handoff preparation.
+- Environment – Fedora laptop + droplet (`phill`) + Supabase SQL Editor.
 
 - Clock in – time not captured.
-- Clock out – time not captured.
+- Clock out – handoff prepared, stopping point recorded.

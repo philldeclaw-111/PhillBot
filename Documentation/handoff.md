@@ -1,41 +1,36 @@
-# Handoff — PhillBot
+# Handoff — PhillBot (Runtime Context Copy)
 
-Purpose: Short, precise state transfer between sessions.
-
-Status: Drafted; must be completed per session.
+Status: Active; synchronized after Step 2 closure and Step 3 re-validation.
 Open Items / Remaining Work:
-- Fill in all required fields before ending a session.
+- Close Step 4 by reducing runtime GitHub token scope to branch+PR-only and re-validating.
 
----
+## Current Gate State
 
-## Project State
+- Step 1: Pass
+- Step 2: Pass (active runtime backend interpretation; workspace/git-backed memory path evidence)
+- Step 3: Pass (runtime wiring + Telegram smoke evidence for `/pin`, `/forget`, `/source`)
+- Step 4: Pending
+- Step 5: Pending
+- Step 6: Pending
 
-- Canonical repo: TBD (bot repo URL once cloned).
-- Backup location (if any): TBD.
-- Active branch + commit: TBD.
-- Current task: Document stack created; repo clone and baseline image next.
+## What just ran
 
-## What’s Implemented
+1. Step 2 backend reality and least-priv evidence:
+- Confirmed active memory substrate is workspace/git-backed for current runtime flow.
+- Verified write/delete proofs in memory workspace git history (`a10791b`, `0ae06ac`).
 
-- Document stack per project-guidelines (master_dev_guide, architecture, baseline_and_dependencies, component_library, known_issues, update_log, status_tracker, test_plan, time_log, handoff, handoff_methodologies, doc_reconciliation_checklist; bot_baseline_requirements).
-- Identity (Gmail, GitHub, etc.) created by user; infra (droplet, Tailscale, Docker) in place.
+2. Step 3 re-validation:
+- Verified command wiring remains present in runtime source.
+- Reconciled with Telegram smoke evidence and memory workspace artifacts.
 
-## Open Issues
+3. Runtime recreate and startup check:
+- `docker compose -f docker-compose.yml -f docker-compose.override.yml up -d --force-recreate`
+- `docker compose -f docker-compose.yml -f docker-compose.override.yml logs --since=3m openclaw-gateway`
 
-- Bot repo not yet cloned (correct URL + bot’s GitHub auth needed).
-- Baseline Docker image not yet defined or built.
-- No bot runtime running yet.
+4. Step 4 runtime GitHub validation:
+- `GH_TOKEN` is present and authenticated API reads succeed from runtime (`pulls` endpoint HTTP 200).
+- Current token exceeds gate scope target (`permissions.admin: true`), so Step 4 is still pending.
 
-## Validation Status
+## Next single step
 
-- Tests run: None (no bot deploy yet).
-- Evidence links: N/A.
-- Tests pending: All suites in test_plan.md.
-
-## Next Steps
-
-1. Clone bot repo on droplet with bot’s PAT or SSH key.
-2. Define and build baseline Docker image (runtime + `gh`; auth at runtime).
-3. Add `.env` and run `docker compose up -d`; verify bot responds.
-4. Populate baseline_and_dependencies with versions and evidence.
-5. Add architecture stamps for baseline image and bot runtime.
+- Rotate/re-scope runtime GitHub token to branch+PR-only permissions, then re-run Step 4 proof and update docs.

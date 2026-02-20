@@ -1,66 +1,55 @@
-# Status Tracker — PhillBot
+# Status Tracker — PhillBot (Runtime Context Copy)
 
-Purpose: Track subsystem progress, blockers, owners, and test evidence.
-
-Status: Drafted; must be updated continuously.
+Status: Active.
 Open Items / Remaining Work:
-- Populate with real subsystems and owners as work proceeds.
+- Add new dated evidence links whenever smoke tests are re-run.
 
----
+## OpenClaw runtime baseline
 
-## Overview
-
-Each subsystem must include:
-- Completion percentage (realistic; never 100% without tests).
-- Blocking tasks / owners / target dates.
-- Latest test evidence or logs.
-
----
-
-## Identity & accounts
-
-Completion: ~80% (user created Gmail + GitHub; prepaid, Make.com, API accounts as planned)
-Last validation date: TBD
+Completion: ~86%
+Last validation date: 2026-02-20
 Blocking tasks / owners / target dates:
-- Wire bot GitHub auth on droplet (PAT or SSH); clone repo. Owner: TBD. Date: TBD.
-Latest test evidence or logs: None
+- Reduce runtime GitHub token to branch+PR-only scope and re-validate Step 4. Owner: AI + Jon. Date: TBD.
+- Step 5 non-AI watchdog path. Owner: AI. Date: TBD.
+Latest test evidence or logs:
+- Runtime recreate succeeded (`docker compose ... up -d --force-recreate`).
+- Gateway startup logs show no immediate crash stack traces after recreate.
+- Runtime-authenticated GitHub REST call succeeded (`pulls` endpoint returned HTTP 200), but repo permission probe reports admin-capable token.
 
----
+## Memory platform (active runtime path)
 
-## Infrastructure (droplet, Tailscale, Docker)
-
-Completion: ~90% (droplet, Tailscale, Docker + Compose in place; repo not yet cloned)
-Last validation date: TBD
+Completion: ~74%
+Last validation date: 2026-02-20
 Blocking tasks / owners / target dates:
-- Clone bot repo to `~/clawbot`; add baseline image with `gh`. Owner: TBD. Date: TBD.
-Latest test evidence or logs: None
+- Align docs language if/when runtime memory backend switches from workspace/git-backed flow to Supabase-backed flow.
+- Add explicit backend-switch test case to gate checklist.
+Latest test evidence or logs:
+- Active runtime memory evidence points to workspace/git-backed flow:
+  - `/home/claw/.openclaw/workspace/memory/2026-02-20.md`
+  - Commit `a10791b` (pin write) and `0ae06ac` (forget delete)
+- Supabase memory env vars exist in runtime, but active command-path proof collected here is workspace/git-backed.
 
----
+## Bot runtime memory commands (`/pin`, `/forget`, `/source`)
 
-## Baseline Docker image
-
-Completion: 0%
-Last validation date: TBD
+Completion: ~90%
+Last validation date: 2026-02-20
 Blocking tasks / owners / target dates:
-- Define base image; add GitHub CLI; document build and run. Owner: TBD. Date: TBD.
-Latest test evidence or logs: None
+- Capture one new post-recreate live Telegram smoke run in this same session window.
+Latest test evidence or logs:
+- Telegram smoke evidence screenshot confirms pin/source/forget/source behavior.
+- Code wiring remains intact in:
+  - `src/auto-reply/reply/commands-core.ts`
+  - `src/auto-reply/reply/commands-memory.ts`
+  - `src/auto-reply/commands-registry.data.ts`
 
----
+## GitHub runtime scope gate (Step 4)
 
-## Bot runtime (Telegram, teaching, scheduling)
-
-Completion: 0%
-Last validation date: TBD
+Completion: ~60%
+Last validation date: 2026-02-20
 Blocking tasks / owners / target dates:
-- Repo and config in place; then implement/modify handlers and pipelines. Owner: TBD. Date: TBD.
-Latest test evidence or logs: None
-
----
-
-## CI / deployment
-
-Completion: 0%
-Last validation date: TBD
-Blocking tasks / owners / target dates:
-- Define PR-based flow; optional GitHub Actions. Owner: TBD. Date: TBD.
-Latest test evidence or logs: None
+- Rotate/re-scope runtime token to remove admin/maintain-level permissions. Owner: Jon. Date: TBD.
+- Re-run runtime proof with branch/PR-only scopes and capture updated evidence. Owner: AI + Jon. Date: TBD.
+Latest test evidence or logs:
+- `GH_TOKEN` present in runtime.
+- Authenticated PR-list API request succeeded (HTTP 200).
+- Repo metadata response shows `permissions.admin: true`, so gate target is not yet met.

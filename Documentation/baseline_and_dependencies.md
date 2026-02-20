@@ -2,23 +2,26 @@
 
 Purpose: Single source of truth for toolchain setup, baseline version locks, evidence, and dependency policy.
 
-Status: Drafted; must be filled per project.
+Status: In progress; partial baseline validated in production-like environment.
 Open Items / Remaining Work:
-- Record all baseline versions with evidence (Docker, Compose, base image, `gh`).
-- Define dependency ownership (vendor vs upstream).
-- Confirm upgrade cadence and deferral rules.
+- Capture OpenClaw release/tag and image digest as known-good baseline.
+- Confirm runtime GitHub operation tests using `GH_TOKEN`.
+- Document recovery steps for device token mismatch in local CLI path.
+- Complete runtime migration from broad service-role DB key to scoped DB role credentials.
 
 ---
 
 ## 1) Environment and Toolchain Setup
 
-- **Host:** DigitalOcean Droplet, Debian; user `claw`; Docker + Docker Compose.
-- **Baseline image:** To be defined (e.g. `node:20` or `python:3.11`); includes GitHub CLI (`gh`). Auth (e.g. `GH_TOKEN`) at runtime only.
+- **Host:** DigitalOcean Droplet (`phill`), Debian; user `claw`; Docker + Docker Compose.
+- **Runtime:** OpenClaw upstream cloned at `/home/claw/openclaw-upstream`, launched via docker compose.
+- **Memory backend:** Supabase project configured; `memory` schema + `entries` table created.
+- **Secrets loading:** `.env` + `docker-compose.override.yml` used to inject runtime env vars into `openclaw-gateway` and `openclaw-cli`.
 
-Status: Drafted; not validated.
+Status: Partially validated.
 Open Items / Remaining Work:
-- Add step-by-step Dockerfile and build commands.
-- Confirm setup on droplet and in CI (if added).
+- Capture command bundle for reproducible bootstrap from clean droplet.
+- Add CI parity notes for non-interactive onboarding and channel registration.
 
 Required fields (to fill):
 - Base image name and tag
@@ -38,19 +41,19 @@ Open Items / Remaining Work:
 - Verify newest stable versions for Docker, Compose, base runtime, `gh`.
 - Record any deferrals with owner and target date.
 
-Baseline table (fill in):
+Baseline table:
 - Docker:
-  - Version: TBD
-  - Verified date: TBD
+  - Version: `26.1.5+dfsg1`
+  - Verified date: 2026-02-18
 - Docker Compose:
-  - Version: TBD (e.g. 2.26.x)
-  - Verified date: TBD
-- Base runtime (e.g. Node/Python):
-  - Version: TBD
-  - Verified date: TBD
-- GitHub CLI (`gh`):
-  - Version: TBD
-  - Verified date: TBD
+  - Version: `2.26.1-4`
+  - Verified date: 2026-02-18
+- Runtime stack:
+  - Version: OpenClaw `2026.2.18` (reported by runtime startup)
+  - Verified date: 2026-02-18
+- Host Node/npm:
+  - Version: Not installed on host (`node`/`npm` not found), expected because runtime is containerized.
+  - Verified date: 2026-02-18
 
 ---
 
@@ -58,9 +61,23 @@ Baseline table (fill in):
 
 Evidence proves the baseline is real (e.g. `docker --version`, `docker compose version`, `gh --version`).
 
-Status: Drafted; evidence pending.
+Status: Partially complete.
 Open Items / Remaining Work:
-- Add logs or command outputs from droplet.
+- Add captured log references for onboarding + channel pairing.
+- Add Supabase SQL evidence snapshots (schema/table/extension checks).
+
+Evidence captured:
+- `tailscale status` showed fedora + phill connectivity.
+- `docker --version` and `docker compose version` verified.
+- OpenClaw onboarding completed; gateway started and Telegram account added.
+- Telegram `/status` responded after pairing approval.
+- Supabase SQL checks passed:
+  - `create extension if not exists vector;`
+  - `create schema if not exists memory;`
+  - `memory.entries` table present and writable.
+  - role + policy hardening:
+    - `bot_runtime`, `bot_judge_ro`, `bot_runtime_staging`
+    - `memory_staging.entries` with dedicated sequence + RLS policy
 
 ---
 
@@ -70,7 +87,7 @@ Open Items / Remaining Work:
 - If edits are required, promote to local ownership and document in update log.
 - Each dependency must declare source (vendor, upstream, fork).
 
-Status: Drafted; policy pending.
+Status: Active.
 Open Items / Remaining Work:
 - Confirm ownership model for each dependency class.
 
@@ -83,7 +100,7 @@ Open Items / Remaining Work:
 
 Status: Drafted; cadence pending.
 Open Items / Remaining Work:
-- Choose cadence (e.g. monthly / per milestone).
+- Choose cadence (recommended: per milestone + monthly review for runtime/image updates).
 
 ---
 
@@ -93,9 +110,9 @@ Open Items / Remaining Work:
 - Create rollback plan before applying update.
 - Apply in isolation where possible; re-run baseline checks; record in update log and status tracker.
 
-Status: Drafted; enforcement required.
+Status: Active; partially exercised.
 Open Items / Remaining Work:
-- Confirm exact steps for this project.
+- Add token-rotation regression checks (Telegram/OpenAI/Supabase/GitHub).
 
 ---
 
@@ -105,9 +122,10 @@ Open Items / Remaining Work:
 - Before major update, backup `.env` and critical config.
 - On failure: revert to known-good baseline and re-apply changes one at a time.
 
-Status: Drafted; enforcement required.
+Status: Active.
 Open Items / Remaining Work:
-- Identify last known-good build and recovery steps.
+- Record known-good compose startup state and matching config hash.
+- Add "device token mismatch" resolution runbook for local CLI.
 
 ---
 
@@ -117,4 +135,4 @@ List any known exceptions to the baseline, with owner and target date.
 
 Status: Drafted.
 Open Items / Remaining Work:
-- Record exceptions as they occur.
+- Current known exception: `health --token` flag mismatch in current OpenClaw build; health path uses alternate command flow.

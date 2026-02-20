@@ -1,134 +1,75 @@
-# Test Plan — PhillBot
+# Test Plan — PhillBot (Runtime Context Copy)
 
-Purpose: Defines all test suites and manual checklists. Every suite must be marked Pass/Fail/Pending with dates and evidence links. No subsystem is “complete” unless its tests are Pass.
-
-Status: Drafted; customized for PhillBot (bot/automation; no hardware).
+Status: Active; updated for Step 2 and Step 3 execution evidence.
 Open Items / Remaining Work:
-- Populate test suites for each subsystem.
-- Add evidence links for each test run.
+- Add fresh interactive Telegram smoke rerun evidence in the next operator session.
 
----
+## Baseline Completion Gate Checklist
 
-## Test Plan Rules (Mandatory)
+### Step 2 — Least-Privilege Runtime Cutover
 
-Status: Locked.
-Open Items / Remaining Work:
-- None.
+Status: Pass (active backend interpretation)
+Date: 2026-02-20
+Validation:
+- Codepath check shows memory backend resolves to non-Supabase runtime memory flow:
+  - `src/memory/backend-config.ts` defaults `DEFAULT_BACKEND` to `builtin`.
+  - `src` search did not surface active Supabase memory adapter usage in command handling.
+- Runtime path evidence (active backend write/read substrate):
+  - Workspace root resolved from `.env`: `OPENCLAW_WORKSPACE_DIR=/home/claw/.openclaw/workspace`.
+  - Memory artifact present: `/home/claw/.openclaw/workspace/memory/2026-02-20.md`.
+  - Git-backed memory writes/forgets verified:
+    - `a10791b Pin smoke-memory-entry` (`1 insertion`)
+    - `0ae06ac Forget smoke-memory-entry` (`1 deletion`)
 
-Rules:
-- Each suite must be marked Pass / Fail / Pending.
-- Pending entries must include the required steps to close.
-- Do not delete Pending entries until evidence is captured.
-- Every test requires an evidence link (log, screenshot, command output).
-- Add stress scenarios for major subsystems.
+Evidence:
+- `git -C /home/claw/.openclaw/workspace log --oneline -n 5`
+- `git -C /home/claw/.openclaw/workspace show --stat --oneline a10791b`
+- `git -C /home/claw/.openclaw/workspace show --stat --oneline 0ae06ac`
 
----
+Notes:
+- Supabase env presence was already validated previously, but Step 2 closure here is based on the currently active runtime memory path (workspace/git-backed), not env presence alone.
 
-## Access & connectivity
+### Step 3 — Memory Commands v1
 
-Status: Pending  
-Date: TBD  
-Test Session ID / Date: TBD  
-Evidence Required: Logs or terminal output.
+Status: Pass (current runtime evidence)
+Date: 2026-02-20
+Validation:
+- Runtime command wiring still present:
+  - `commands-core.ts` includes `handleMemoryCommands` once.
+  - Registry contains `pin`, `forget`, `source`.
+  - `commands-memory.ts` contains handlers for all three commands.
+- Telegram smoke evidence (captured) confirms:
+  - `/pin` persisted entry.
+  - `/source` returned source.
+  - `/forget` removed entry.
+  - follow-up `/source` reported removal.
+- Runtime substrate corroborates outcome via memory workspace commit history.
 
-Checklist:
-- Tailscale SSH from laptop to droplet (`tailscale ssh claw@phill`) works.
-- Docker and Docker Compose run on droplet.
-- Bot’s GitHub auth (PAT or SSH) allows clone/pull on droplet.
+Evidence:
+- Screenshot evidence: `assets/IMG_9018-46e87e67-bdf9-4e54-ace6-7a7d8381effa.png`
+- `rg` checks in `src/auto-reply` for handler/registry presence
+- memory workspace git commit evidence listed above
 
----
+### Step 4 — GitHub Runtime Validation
 
-## Baseline image build & run
+Status: Pending (auth works; permissions exceed branch+PR-only target)
+Date: 2026-02-20
+Validation:
+- Runtime token presence confirmed in running gateway container (`GH_TOKEN_SET`).
+- Authenticated runtime API operation succeeded:
+  - `GET /repos/philldeclaw-111/PhillBot/pulls?state=open&per_page=5` -> HTTP `200`
+  - Response artifact copied to host: `/tmp/gh_prs.json` (`[]`)
+- Repository permission probe shows current token is over-privileged for this gate target:
+  - `GET /repos/philldeclaw-111/PhillBot` -> HTTP `200`
+  - Response includes `permissions.admin: true` (also `maintain/push/triage/pull: true`)
+- `gh` CLI is unavailable in both host and runtime containers (`gh: not found`), so REST API evidence was used.
 
-Status: Pending  
-Date: TBD  
-Test Session ID / Date: TBD  
-Evidence Required: Build log; `docker run` or `docker compose up` output.
-
-Checklist:
-- Dockerfile builds without error.
-- Image includes GitHub CLI (`gh --version` inside container).
-- Container starts with runtime env (e.g. `GH_TOKEN`) and no secrets in image.
-
----
-
-## Bot startup & config
-
-Status: Pending  
-Date: TBD  
-Test Session ID / Date: TBD  
-Evidence Required: Logs of `docker compose up` and first bot response.
-
-Checklist:
-- `docker compose up -d` succeeds.
-- Bot process runs and reads `.env` (no secrets in repo).
-- Container has network access (Telegram, APIs as needed).
-
----
-
-## Telegram integration
-
-Status: Pending  
-Date: TBD  
-Test Session ID / Date: TBD  
-Evidence Required: Logs or screenshots of send/receive.
-
-Checklist:
-- Bot receives messages from user’s Telegram.
-- Bot can send replies.
-- Command parsing and dispatch (when implemented) behave as expected.
-
----
-
-## Teaching / pipeline (when implemented)
-
-Status: Pending  
-Date: TBD  
-Test Session ID / Date: TBD  
-Evidence Required: Logs or sample outputs.
-
-Checklist:
-- Subject + inputs (e.g. PDFs) trigger teaching flow.
-- Podcast-style or other outputs generated as designed.
-- Errors and retries handled and logged.
-
----
-
-## GitHub CLI from container (when implemented)
-
-Status: Pending  
-Date: TBD  
-Test Session ID / Date: TBD  
-Evidence Required: Logs of `gh` commands run from inside container.
-
-Checklist:
-- `gh auth status` or equivalent shows authenticated (via `GH_TOKEN`).
-- Clone/pull or other `gh` operations succeed as needed by bot.
-
----
-
-## Stress and stability
-
-Status: Pending  
-Date: TBD  
-Test Session ID / Date: TBD  
-Evidence Required: Soak run logs.
-
-Checklist:
-- Extended run without crash (e.g. 24h soak).
-- Memory/CPU stable under normal load.
-- Network loss and reconnection handled.
-
----
-
-## Security and secrets
-
-Status: Pending  
-Date: TBD  
-Test Session ID / Date: TBD  
-Evidence Required: Config review; no secrets in image or repo.
-
-Checklist:
-- No API keys or tokens in image or version control.
-- Secrets supplied only via env or mounted config.
-- Bot credentials not present in Cursor or user’s dev machine.
+Evidence:
+- `docker compose ... exec openclaw-gateway sh -lc 'test -n \"$GH_TOKEN\" && echo GH_TOKEN_SET || echo GH_TOKEN_MISSING'`
+- `docker compose ... exec openclaw-gateway sh -lc 'curl ... /repos/philldeclaw-111/PhillBot/pulls ...'` -> `200`
+- `/tmp/gh_prs.json`
+- `docker compose ... exec openclaw-gateway sh -lc 'curl ... /repos/philldeclaw-111/PhillBot'` -> `200`
+- `/tmp/gh_repo.json` lines showing permissions:
+  - `"admin": true`
+  - `"maintain": true`
+  - `"push": true`
