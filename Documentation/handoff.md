@@ -2,14 +2,14 @@
 
 Status: Active; synchronized after Step 2 closure and Step 3 re-validation.
 Open Items / Remaining Work:
-- Close Step 4 by reducing runtime GitHub token scope to branch+PR-only and re-validating.
+- Continue to Step 5 in strict gate order.
 
 ## Current Gate State
 
 - Step 1: Pass
 - Step 2: Pass (active runtime backend interpretation; workspace/git-backed memory path evidence)
 - Step 3: Pass (runtime wiring + Telegram smoke evidence for `/pin`, `/forget`, `/source`)
-- Step 4: Pending
+- Step 4: Pass (runtime branch/PR operations validated; admin-boundary endpoints denied)
 - Step 5: Pending
 - Step 6: Pending
 
@@ -28,9 +28,14 @@ Open Items / Remaining Work:
 - `docker compose -f docker-compose.yml -f docker-compose.override.yml logs --since=3m openclaw-gateway`
 
 4. Step 4 runtime GitHub validation:
-- `GH_TOKEN` is present and authenticated API reads succeed from runtime (`pulls` endpoint HTTP 200).
-- Current token exceeds gate scope target (`permissions.admin: true`), so Step 4 is still pending.
+- Probe branch lifecycle succeeded from runtime token:
+  - create ref `201`
+  - PR create request authorized (`422` expected: no commits between branches)
+  - delete ref `204`
+- Admin-sensitive endpoints denied:
+  - hooks `403`
+  - branch protection `403`
 
 ## Next single step
 
-- Rotate/re-scope runtime GitHub token to branch+PR-only permissions, then re-run Step 4 proof and update docs.
+- Execute Step 5 (non-AI watchdog path) and capture simulated failure alert evidence.

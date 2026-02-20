@@ -39,44 +39,38 @@ Evidence Link:
 - `assets/IMG_9018-46e87e67-bdf9-4e54-ace6-7a7d8381effa.png`
 - Runtime command outputs listed in session transcript.
 
-## 2026-02-20 (Step 4 runtime GitHub validation attempt)
+## 2026-02-20 (Step 4 runtime GitHub validation)
 
 Summary:
-- Executed Step 4 runtime GitHub validation in strict single-lane order after Step 2/3.
-- Confirmed runtime token can perform authenticated GitHub API reads.
-- Step 4 remains pending because current token permissions exceed branch+PR-only target.
+- Completed Step 4 validation in runtime context.
+- Confirmed branch/PR lane works from runtime token while admin-boundary endpoints remain denied.
 
 Validation:
-- Runtime token presence check:
-  - `GH_TOKEN_SET` inside `openclaw-gateway`.
-- Authenticated operation success:
-  - `GET https://api.github.com/repos/philldeclaw-111/PhillBot/pulls?state=open&per_page=5` returned HTTP `200`.
-  - Response artifact: `/tmp/gh_prs.json` (empty list, valid response).
-- Scope reality check:
-  - `GET https://api.github.com/repos/philldeclaw-111/PhillBot` returned HTTP `200`.
-  - Returned permissions show:
-    - `"admin": true`
-    - `"maintain": true`
-    - `"push": true`
-    - `"triage": true`
-    - `"pull": true`
-- Tooling note:
-  - `gh` CLI not installed in host or runtime containers, so GitHub REST calls were used for evidence.
+- Runtime token present in gateway container (`GH_TOKEN_SET`).
+- Branch/PR lane checks:
+  - `main_ref:200`
+  - `create_ref:201`
+  - `create_pr:422` with message `"No commits between main and scope-probe-..."`
+  - `delete_ref:204`
+- Admin-boundary checks:
+  - `hooks:403`
+  - `branch_protection:403`
 
 Open Items:
-- Re-scope token to branch+PR-only permissions and re-run Step 4 validation.
-- Proceed to Step 5 only after Step 4 closure.
+- Step 5 non-AI watchdog implementation and simulated failure test.
+- Step 6 validation pass and release gate report.
 
 Confidence Level:
-- 93% (auth path proof is solid; scope target is clearly unmet).
+- 95% (step criteria satisfied with explicit runtime evidence).
 
 Behavior Change:
-- No runtime behavior change; this entry records validation results and gate decision.
+- No runtime behavior change; this entry records gate closure evidence.
 
 Build State:
-- Y (runtime container active during validation), date: 2026-02-20, repo path: `/home/claw/openclaw-upstream`.
+- Y (runtime active), date: 2026-02-20, repo path: `/home/claw/openclaw-upstream`.
 
 Evidence Link:
-- `/tmp/gh_prs.json`
-- `/tmp/gh_repo.json`
-- Session command outputs for runtime `curl` checks.
+- `/tmp/step4_create_pr.json`
+- `/tmp/step4_hooks.json`
+- `/tmp/step4_branch_protection.json`
+- Step 4 status lines in runtime command output (`main_ref/create_ref/create_pr/hooks/branch_protection/delete_ref`).

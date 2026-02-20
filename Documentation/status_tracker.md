@@ -9,12 +9,11 @@ Open Items / Remaining Work:
 Completion: ~86%
 Last validation date: 2026-02-20
 Blocking tasks / owners / target dates:
-- Reduce runtime GitHub token to branch+PR-only scope and re-validate Step 4. Owner: AI + Jon. Date: TBD.
 - Step 5 non-AI watchdog path. Owner: AI. Date: TBD.
 Latest test evidence or logs:
 - Runtime recreate succeeded (`docker compose ... up -d --force-recreate`).
 - Gateway startup logs show no immediate crash stack traces after recreate.
-- Runtime-authenticated GitHub REST call succeeded (`pulls` endpoint returned HTTP 200), but repo permission probe reports admin-capable token.
+- Runtime-authenticated GitHub branch/PR probes succeeded; admin-boundary probes returned 403.
 
 ## Memory platform (active runtime path)
 
@@ -44,12 +43,12 @@ Latest test evidence or logs:
 
 ## GitHub runtime scope gate (Step 4)
 
-Completion: ~60%
+Completion: ~100%
 Last validation date: 2026-02-20
 Blocking tasks / owners / target dates:
-- Rotate/re-scope runtime token to remove admin/maintain-level permissions. Owner: Jon. Date: TBD.
-- Re-run runtime proof with branch/PR-only scopes and capture updated evidence. Owner: AI + Jon. Date: TBD.
+- Keep token policy reviewed during key rotation; preserve branch/PR-focused runtime path. Owner: Jon + AI. Date: ongoing.
 Latest test evidence or logs:
 - `GH_TOKEN` present in runtime.
-- Authenticated PR-list API request succeeded (HTTP 200).
-- Repo metadata response shows `permissions.admin: true`, so gate target is not yet met.
+- Probe branch lifecycle validated from runtime token:
+  - create ref `201`, PR create attempt `422` (authorized but no commits), delete ref `204`.
+- Admin-boundary endpoints denied (`hooks` and `branch protection` both `403`).

@@ -52,24 +52,22 @@ Evidence:
 
 ### Step 4 — GitHub Runtime Validation
 
-Status: Pending (auth works; permissions exceed branch+PR-only target)
+Status: Pass
 Date: 2026-02-20
 Validation:
 - Runtime token presence confirmed in running gateway container (`GH_TOKEN_SET`).
-- Authenticated runtime API operation succeeded:
-  - `GET /repos/philldeclaw-111/PhillBot/pulls?state=open&per_page=5` -> HTTP `200`
-  - Response artifact copied to host: `/tmp/gh_prs.json` (`[]`)
-- Repository permission probe shows current token is over-privileged for this gate target:
-  - `GET /repos/philldeclaw-111/PhillBot` -> HTTP `200`
-  - Response includes `permissions.admin: true` (also `maintain/push/triage/pull: true`)
-- `gh` CLI is unavailable in both host and runtime containers (`gh: not found`), so REST API evidence was used.
+- Authenticated runtime PR-read operation:
+  - `GET /repos/philldeclaw-111/PhillBot/pulls?state=open&per_page=5` -> HTTP `200`.
+- Branch write lifecycle proved (branch+PR lane):
+  - `GET /repos/philldeclaw-111/PhillBot/git/ref/heads/main` -> `200` (main SHA resolved)
+  - `POST /repos/philldeclaw-111/PhillBot/git/refs` -> `201` (probe branch created)
+  - `POST /repos/philldeclaw-111/PhillBot/pulls` -> `422` with `"No commits between..."` (request authorized; expected validation failure)
+  - `DELETE /repos/philldeclaw-111/PhillBot/git/refs/heads/<probe>` -> `204` (probe branch removed)
+- Admin-boundary checks denied:
+  - `GET /repos/philldeclaw-111/PhillBot/hooks` -> `403`
+  - `GET /repos/philldeclaw-111/PhillBot/branches/main/protection` -> `403`
 
 Evidence:
-- `docker compose ... exec openclaw-gateway sh -lc 'test -n \"$GH_TOKEN\" && echo GH_TOKEN_SET || echo GH_TOKEN_MISSING'`
-- `docker compose ... exec openclaw-gateway sh -lc 'curl ... /repos/philldeclaw-111/PhillBot/pulls ...'` -> `200`
-- `/tmp/gh_prs.json`
-- `docker compose ... exec openclaw-gateway sh -lc 'curl ... /repos/philldeclaw-111/PhillBot'` -> `200`
-- `/tmp/gh_repo.json` lines showing permissions:
-  - `"admin": true`
-  - `"maintain": true`
-  - `"push": true`
+- `/tmp/step4_create_pr.json`
+- `/tmp/step4_hooks.json`
+- `/tmp/step4_branch_protection.json`
