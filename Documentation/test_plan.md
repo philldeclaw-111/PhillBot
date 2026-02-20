@@ -71,3 +71,23 @@ Evidence:
 - `/tmp/step4_create_pr.json`
 - `/tmp/step4_hooks.json`
 - `/tmp/step4_branch_protection.json`
+
+### Step 5 — Non-AI Watchdog Path
+
+Status: Pending (implementation landed; runtime simulation pending)
+Date: 2026-02-20
+Validation:
+- Added non-AI watchdog event emission on model/auth outages in:
+  - `src/auto-reply/reply/agent-runner-execution.ts`
+  - Emits system event with context key `watchdog:model-auth` when errors match auth/outage patterns (`401/403`, unauthorized, invalid api key, authentication/forbidden).
+- Added regression test coverage in:
+  - `src/auto-reply/reply/agent-runner.runreplyagent.test.ts`
+  - Asserts watchdog event enqueue on `401 Unauthorized: invalid api key`.
+- Lint check for edited files reports no lint errors.
+
+Evidence:
+- `git diff -- src/auto-reply/reply/agent-runner-execution.ts src/auto-reply/reply/agent-runner.runreplyagent.test.ts`
+- IDE lint snapshot: no errors for both edited files
+
+Pending closure steps:
+- Run runtime simulation of model/auth outage and capture operator-visible alert evidence from system events/log path.

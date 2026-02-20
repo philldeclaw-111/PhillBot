@@ -36,6 +36,11 @@ Open Items / Remaining Work:
   - hooks `403`
   - branch protection `403`
 
+5. Step 5 watchdog implementation:
+- Added non-AI watchdog event enqueue on model/auth outage signatures in `agent-runner-execution`.
+- Added regression test coverage to verify watchdog event enqueue behavior.
+- Step 5 remains pending until live runtime outage simulation evidence is captured.
+
 ## Next single step
 
-- Execute Step 5 (non-AI watchdog path) and capture simulated failure alert evidence.
+- Run a controlled runtime auth/model failure simulation and capture operator-visible watchdog alert evidence to close Step 5.

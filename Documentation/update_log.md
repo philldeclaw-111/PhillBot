@@ -74,3 +74,33 @@ Evidence Link:
 - `/tmp/step4_hooks.json`
 - `/tmp/step4_branch_protection.json`
 - Step 4 status lines in runtime command output (`main_ref/create_ref/create_pr/hooks/branch_protection/delete_ref`).
+
+## 2026-02-20 (Step 5 watchdog implementation start)
+
+Summary:
+- Started Step 5 by implementing a non-AI watchdog signal path for model/auth failures.
+- Added test coverage for watchdog event emission on auth outage errors.
+
+Validation:
+- Code changes:
+  - `src/auto-reply/reply/agent-runner-execution.ts`
+    - enqueue system event `WATCHDOG ALERT: model/auth failure (...)` with context key `watchdog:model-auth` when auth/outage signatures are detected.
+  - `src/auto-reply/reply/agent-runner.runreplyagent.test.ts`
+    - new test asserts watchdog event enqueue for `401 Unauthorized: invalid api key`.
+- Lint diagnostics for edited files: no errors reported.
+
+Open Items:
+- Run live runtime simulation to prove operator-visible watchdog alert in the deployed path.
+- Capture and store simulation evidence, then mark Step 5 Pass.
+
+Confidence Level:
+- 90% (implementation and unit coverage are in place; live runtime proof pending).
+
+Behavior Change:
+- On auth/model outage errors, the runtime now enqueues a non-AI system watchdog event for operator visibility.
+
+Build State:
+- N for runtime deployment proof in this entry (code edited, lint-checked; live simulation pending), date: 2026-02-20.
+
+Evidence Link:
+- `git diff -- src/auto-reply/reply/agent-runner-execution.ts src/auto-reply/reply/agent-runner.runreplyagent.test.ts`

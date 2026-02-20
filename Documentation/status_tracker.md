@@ -52,3 +52,13 @@ Latest test evidence or logs:
 - Probe branch lifecycle validated from runtime token:
   - create ref `201`, PR create attempt `422` (authorized but no commits), delete ref `204`.
 - Admin-boundary endpoints denied (`hooks` and `branch protection` both `403`).
+
+## Non-AI watchdog path (Step 5)
+
+Completion: ~70%
+Last validation date: 2026-02-20
+Blocking tasks / owners / target dates:
+- Execute live runtime auth/model failure simulation and capture operator-visible alert evidence. Owner: AI + Jon. Date: TBD.
+Latest test evidence or logs:
+- Watchdog enqueue path implemented in `agent-runner-execution` for auth/model outage signatures.
+- Regression test added to assert watchdog event enqueue on 401 auth error path.
